@@ -11,6 +11,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     private String verifyCode;
 
     private static final String TAG = "loginPage";
+    private RadioGroup rb_login;
 
 
     @Override
@@ -62,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        RadioGroup rb_login = findViewById(R.id.rg_login);
+        rb_login = findViewById(R.id.rg_login);
         tv_password = findViewById(R.id.tv_password);
         et_phone = findViewById(R.id.et_phone);
         et_password = findViewById(R.id.et_password);
@@ -93,6 +95,8 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
                 }
             }
         });
+
+        loadData();
     }
 
     @Override
@@ -243,6 +247,7 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
      */
     private void loginSuccess()
     {
+        saveData();
         String desc = String.format("您的手机号码是%s，恭喜你通过登录验证，点击“确定”按钮返回上个页面",
                 et_phone.getText().toString());
         // 以下弹出提醒对话框，提示用户登录成功
@@ -306,5 +311,47 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         InputMethodManager inputMethodManager = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         //关闭屏幕上的输入法软键盘
         inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+
+    /**
+     * 加载数据
+     */
+    private void loadData()
+    {
+        Log.d(TAG, "loadData: start");
+        SharedPreferences sharedPreferences = getSharedPreferences("login", MODE_PRIVATE);
+
+        String phone = sharedPreferences.getString("phone", "");
+        String password = sharedPreferences.getString("password", "");
+
+        et_phone.setText(phone);
+        et_password.setText(password);
+    }
+
+    /**
+     * 保存数据
+     */
+    private void saveData()
+    {
+        Log.d(TAG, "saveData: startSave");
+        if (rb_login.getCheckedRadioButtonId() != R.id.rb_password)
+        {
+            return;
+        }
+        if (ck_remember.isChecked())
+        {
+            Log.d(TAG, "saveData: save...");
+            SharedPreferences sharedPreferences = getSharedPreferences("login", MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+
+            String phone = et_phone.getText().toString();
+            String password = et_password.getText().toString();
+
+            editor.putString("phone", phone);
+            editor.putString("password", password);
+
+            editor.apply();
+        }
     }
 }
